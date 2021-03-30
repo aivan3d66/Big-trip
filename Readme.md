@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Ivan Adamouski](https://up.htmlacademy.ru/ecmascript/14/user/1096983).
-* Наставник: `Неизвестно`.
+* Наставник: [Артемий Бойков](https://htmlacademy.ru/profile/id607755).
 
 ---
 
