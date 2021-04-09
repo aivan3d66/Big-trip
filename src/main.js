@@ -1,36 +1,28 @@
-import {createEditorFormTemplate} from './view/form-edit.js';
-import {createInitFormTemplate} from './view/form-create.js';
-import {createMenuTemplate} from './view/site-menu.js';
-import {createRouteInfoTemplate} from './view/route-info.js';
-import {createTravelPriceTemplate} from './view/price.js';
-import {createFiltersTemplate} from './view/filters.js';
-import {createSortingTemplate} from './view/sort.js';
-import {createRoutePointTemplate} from './view/route-point.js';
+import {createFiltersTemplate} from './view/filters';
+import {createInitFormTemplate} from './view/routeCreatorForm';
+// import {createEditorFormTemplate} from './view/routeEditorForm';
+import {createMenuTemplate} from './view/siteMenu';
+import {createPointTripTemplate} from './view/routePoint';
+import {createSortTemplate} from './view/sort';
+import {createInfoTripTemplate} from './view/routeInfo';
+import {generatePoint} from './mock/point';
+import {renderTemplate} from './utils';
 
 const POINT_ROUTE_COUNT = 3;
+const points = new Array(POINT_ROUTE_COUNT).fill().map(generatePoint);
 
-const render = (container, template, place) => {
-  container.insertAdjacentHTML(place, template);
-};
+const siteHeaderElement = document.querySelector('.trip-main');
+const siteNavElement = siteHeaderElement.querySelector('.trip-controls__navigation');
+const siteFilterElement = siteHeaderElement.querySelector('.trip-controls__filters');
+const siteMainElement = document.querySelector('.trip-events');
 
-const pageHeaderElement = document.querySelector('.page-header');
-const pageBodyElement = document.querySelector('.page-body__page-main');
-const siteMenu = pageHeaderElement.querySelector('.trip-controls__navigation');
-const siteFilters = pageHeaderElement.querySelector('.trip-controls__filters');
-const tripMain = pageHeaderElement.querySelector('.trip-main');
-const siteContent = pageBodyElement.querySelector('.trip-events');
-
-render(tripMain, createTravelPriceTemplate(), 'afterbegin');
-render(siteMenu, createMenuTemplate(), 'afterbegin');
-render(tripMain, createRouteInfoTemplate(), 'afterbegin');
+renderTemplate(siteHeaderElement, createInfoTripTemplate(), 'afterbegin');
+renderTemplate(siteNavElement, createMenuTemplate());
+renderTemplate(siteFilterElement, createFiltersTemplate());
+renderTemplate(siteMainElement, createSortTemplate());
+// renderTemplate(siteMainElement, createEditorFormTemplate(points[0]));
+renderTemplate(siteMainElement, createInitFormTemplate(points[0]));
 
 for (let i = 0; i < POINT_ROUTE_COUNT; i++) {
-  render(siteContent, createRoutePointTemplate(), 'afterbegin');
+  renderTemplate(siteMainElement, createPointTripTemplate(points[i]));
 }
-
-render(siteContent, createEditorFormTemplate(), 'afterbegin');
-render(siteContent, createInitFormTemplate(), 'beforeend');
-render(siteFilters, createFiltersTemplate(), 'afterbegin');
-render(siteContent, createSortingTemplate(), 'afterbegin');
-
-
