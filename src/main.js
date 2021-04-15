@@ -1,28 +1,89 @@
-import {createFiltersTemplate} from './view/filters';
-import {createInitFormTemplate} from './view/routeCreatorForm';
-// import {createEditorFormTemplate} from './view/routeEditorForm';
-import {createMenuTemplate} from './view/siteMenu';
-import {createPointTripTemplate} from './view/routePoint';
-import {createSortTemplate} from './view/sort';
-import {createInfoTripTemplate} from './view/routeInfo';
-import {generatePoint} from './mock/point';
-import {renderTemplate} from './utils';
+import MenuView from './view/site-menu';
+import TripInfoView from './view/trip-info';
+import FiltersView from './view/filters';
+import SortView from './view/sort';
+import TripPointEditorView from './view/trip-editor-form';
+import TripPointView from './view/trip-point';
+import TripPointsContainerView from './view/trip-points-container';
+import TripPointsContainerEmptyView from './view/trip-points-container-empty';
 
-const POINT_ROUTE_COUNT = 3;
-const points = new Array(POINT_ROUTE_COUNT).fill().map(generatePoint);
+import {handlerTypes} from './view/handlers.js';
+import {RenderPosition, getComponent, renderElement, toggleView} from './utils/ui.js';
+import {generateTripPointData} from './mock/point';
+import {ViewValues, POINT_ROUTE_COUNT} from './const';
 
-const siteHeaderElement = document.querySelector('.trip-main');
-const siteNavElement = siteHeaderElement.querySelector('.trip-controls__navigation');
-const siteFilterElement = siteHeaderElement.querySelector('.trip-controls__filters');
-const siteMainElement = document.querySelector('.trip-events');
+const testPoints = new Array(POINT_ROUTE_COUNT).fill().map(() => generateTripPointData());
 
-renderTemplate(siteHeaderElement, createInfoTripTemplate(), 'afterbegin');
-renderTemplate(siteNavElement, createMenuTemplate());
-renderTemplate(siteFilterElement, createFiltersTemplate());
-renderTemplate(siteMainElement, createSortTemplate());
-// renderTemplate(siteMainElement, createEditorFormTemplate(points[0]));
-renderTemplate(siteMainElement, createInitFormTemplate(points[0]));
+const viewItems = {
+  menu: new MenuView(),
+  tripInfo: new TripInfoView(testPoints),
+  filters: new FiltersView(),
+  sort: new SortView(),
+  tripEventsList: new TripPointsContainerView(),
+  tripPoints: testPoints.map((e) => new TripPointView(e)),
+  noTripPoints: new TripPointsContainerEmptyView(),
+};
 
-for (let i = 0; i < POINT_ROUTE_COUNT; i++) {
-  renderTemplate(siteMainElement, createPointTripTemplate(points[i]));
+const tripPointsEditors = new Map();
+const openedTripPoints = new Set();
+const keyListener = (evt) => {
+  if (evt.key.toLowerCase() == 'escape') {
+    for (const opened of [...openedTripPoints.values()]) {
+      switchToPointViewMode(tripPointsEditors.get(opened));
+    }
+  }
+};
+
+const switchToPointEditMode = (tripPointViewIptr) => {
+  if (!tripPointsEditors.has(tripPointViewIptr)) {
+    const editor = new TripPointEditorView(tripPointViewIptr.tripPoint);
+    editor.setCallback(handlerTypes.CLOSE_POINT_POPUP, callback);
+    tripPointsEditors.set(tripPointViewIptr, editor);
+  }
+  toggleView(viewItems.tripEventsList, tripPointViewIptr, tripPointsEditors.get(tripPointViewIptr));
+  openedTripPoints.add(tripPointViewIptr);
+  document.addEventListener('keydown', keyListener);
+};
+
+const switchToPointViewMode = (editorIptr) => {
+  for (const entry of tripPointsEditors) {
+    if (entry[1] === editorIptr) {
+      toggleView(viewItems.tripEventsList, editorIptr, entry[0]);
+      openedTripPoints.delete(entry[0]);
+      if (!openedTripPoints.size) {
+        document.removeEventListener('keydown', keyListener);
+      }
+      return;
+    }
+  }
+};
+
+function callback (type, viewIptr) {
+  switch (type) {
+    case handlerTypes.OPEN_POINT_POPUP:
+      switchToPointEditMode(viewIptr);
+      break;
+    case handlerTypes.CLOSE_POINT_POPUP:
+      switchToPointViewMode(viewIptr);
+      break;
+    default:
+      break;
+  }
 }
+
+viewItems.tripPoints.forEach((item) => item.setCallback(handlerTypes.OPEN_POINT_POPUP, callback));
+
+const renderApplication = () => {
+  renderElement(getComponent(ViewValues.selectors.MENU), viewItems.menu);
+  renderElement(getComponent(ViewValues.selectors.INFO), viewItems.tripInfo, RenderPosition.AFTERBEGIN);
+  renderElement(getComponent(ViewValues.selectors.FILTERS), viewItems.filters);
+  renderElement(getComponent(ViewValues.selectors.SORT), viewItems.sort);
+  renderElement(getComponent(ViewValues.selectors.EVENTS), viewItems.tripEventsList);
+  if (viewItems.tripPoints && viewItems.tripPoints.length) {
+    viewItems.tripPoints.forEach((item) => renderElement(viewItems.tripEventsList, item));
+  } else {
+    renderElement(getComponent(ViewValues.selectors.EVENTS), viewItems.noTripPoints);
+  }
+};
+
+renderApplication();

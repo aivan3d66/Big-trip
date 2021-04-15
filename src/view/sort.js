@@ -1,28 +1,26 @@
-export const createSortTemplate = () => {
-  return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
-            <div class="trip-sort__item  trip-sort__item--day">
-              <input id="sort-day" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-day" checked>
-              <label class="trip-sort__btn" for="sort-day">Day</label>
-            </div>
+import AbstractViewElement from './view-element';
+import {appData} from '../app-data';
 
-            <div class="trip-sort__item  trip-sort__item--event">
-              <input id="sort-event" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-event" disabled>
-              <label class="trip-sort__btn" for="sort-event">Event</label>
-            </div>
-
-            <div class="trip-sort__item  trip-sort__item--time">
-              <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time">
-              <label class="trip-sort__btn" for="sort-time">Time</label>
-            </div>
-
-            <div class="trip-sort__item  trip-sort__item--price">
-              <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price">
-              <label class="trip-sort__btn" for="sort-price">Price</label>
-            </div>
-
-            <div class="trip-sort__item  trip-sort__item--offer">
-              <input id="sort-offer" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-offer" disabled>
-              <label class="trip-sort__btn" for="sort-offer">Offers</label>
-            </div>
-          </form>`;
+const createSortTemplate = (title = '', checked) => {
+  return `<div class="trip-sort__item  trip-sort__item--${title.toLowerCase()}">
+            <input id="sort-${title.toLowerCase()}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-${title.toLowerCase()}" ${checked ? 'checked' : ''}>
+            <label class="trip-sort__btn" for="sort-${title.toLowerCase()}">${title}</label>
+          </div>`;
 };
+
+const createSortTemplates = () => {
+  return appData.sortTypes.map((title, index) => { return createSortTemplate(title, !index); }).join('');
+};
+
+export default class Sort extends AbstractViewElement {
+  constructor() {
+    super();
+  }
+
+  getTemplate() {
+    return `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
+              ${createSortTemplates()}
+            </form>`;
+  }
+}
+
