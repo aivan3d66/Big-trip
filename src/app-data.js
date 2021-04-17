@@ -11,34 +11,34 @@ const createPointType = (title, isInMotion = true) => {
 
 class AppData {
   constructor() {
-    this.pointTypes_ = ViewValues.pointTypes.map((value) => createPointType(value.name, value.isInMotion));
-    this.filters_ = ViewValues.filters;
-    this.sortTypes_ = ViewValues.sortTypes;
-    this.cityListObject_ = {};
-    this.cityList_ = [];
+    this._pointTypes = ViewValues.pointTypes.map((value) => createPointType(value.name, value.isInMotion));
+    this._filters = ViewValues.filters;
+    this._sortTypes = ViewValues.sortTypes;
+    this._cityListObject = {};
+    this._cityList = [];
   }
 
   get pointTypes() {
-    return this.pointTypes_;
+    return this._pointTypes;
   }
 
   get filters() {
-    return this.filters_;
+    return this._filters;
   }
 
   get sortTypes() {
-    return this.sortTypes_;
+    return this._sortTypes;
   }
 
   get cityList() {
-    return this.cityList_;
+    return this._cityList;
   }
   getPointTypeByTypeName(type) {
-    return this.pointTypes_.find((value) => value.type === type);
+    return this._pointTypes.find((value) => value.type === type);
   }
 
   getPointTypeByTitle(title) {
-    return this.pointTypes_.find((value) => value.title === title);
+    return this._pointTypes.find((value) => value.title === title);
   }
 
   setOffersByTypeName(type, offers) {
@@ -71,22 +71,22 @@ class AppData {
 
   addCity({name, description = '', pictures = []} = {}) {
     if (name) {
-      this.cityListObject_[`${name}`] = {
+      this._cityListObject[`${name}`] = {
         description,
         pictures,
       };
-      const city = this.cityList_.find((value) => value.name === name);
+      const city = this._cityList.find((value) => value.name === name);
       if (city) {
-        this.cityList_[this.cityList_.indexOf(city)] = {name, description, pictures};
+        this._cityList[this._cityList.indexOf(city)] = {name, description, pictures};
       } else {
-        this.cityList_.push({name, description, pictures});
+        this._cityList.push({name, description, pictures});
       }
 
     }
   }
 
   getCity(name) {
-    return `${name}` in this.cityListObject_ ? this.cityListObject_[`${name}`] : undefined;
+    return `${name}` in this._cityListObject ? this._cityListObject[`${name}`] : undefined;
   }
 
   getCityPictures(name) {
