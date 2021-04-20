@@ -10,22 +10,20 @@ export const ViewValues = {
     MENU: '.trip-controls__navigation',
     INFO: '.trip-main',
     FILTERS: '.trip-controls__filters',
-    SORT: '.trip-events',
-    EVENTS: '.trip-events',
-    POINT_CONTAINER: '.trip-events__list',
+    TRIP: '.trip-events',
   },
   filters: [
     'Everything',
     'Future',
     'Past',
   ],
-  sortTypes: [
-    'Day',
-    'Event',
-    'Time',
-    'Price',
-    'Offers',
-  ],
+  sortTypes: {
+    day: 'day',
+    event: 'event',
+    time: 'time',
+    price: 'price',
+    offers: 'offers',
+  },
   pointTypes: [
     {
       name: 'Taxi',

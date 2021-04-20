@@ -1,5 +1,5 @@
-import AbstractViewElement from './view-element';
-import { appData } from '../app-data';
+import AbstractViewElement from './abstract-view-element';
+import {appData} from '../app-data';
 
 const createFilter = (title, checked) => {
   const idMix = title.toLowerCase();

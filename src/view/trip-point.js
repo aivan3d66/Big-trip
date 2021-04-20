@@ -1,4 +1,4 @@
-import AbstractViewElement from './view-element';
+import AbstractViewElement from './abstract-view-element';
 import {handlerTypes} from './handlers';
 import {TimeUtils} from '../utils/time';
 
