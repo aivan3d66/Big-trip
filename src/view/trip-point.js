@@ -1,4 +1,4 @@
-import AbstractViewElement from './view-element';
+import AbstractViewElement from './abstract-view-element';
 import {handlerTypes} from './handlers';
 import {TimeUtils} from '../utils/time';
 
@@ -66,6 +66,7 @@ export default class TripPoint extends AbstractViewElement {
   set tripPoint(value) {
     this._tripPoint = value;
     this._registerHandler(handlerTypes.OPEN_POINT_POPUP, this.getElement().querySelector('.event__rollup-btn'), 'click');
+    this._registerHandler(handlerTypes.FAVORITE_CLICK, this.getElement().querySelector('.event__favorite-btn'), 'click');
   }
 
   get tripPoint() {

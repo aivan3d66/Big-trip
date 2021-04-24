@@ -1,4 +1,4 @@
-import AbstractViewElement from './view-element.js';
+import AbstractViewElement from './abstract-view-element.js';
 import {TimeUtils} from '../utils/time';
 
 const createDateLimits = (from, to) => {
