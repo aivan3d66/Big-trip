@@ -16,6 +16,7 @@ export default class TripPointPresenter {
     this._tripPointEditView = null;
     this._closePointEditForm = this._closePointEditForm.bind(this);
     this._openPointEditForm = this._openPointEditForm.bind(this);
+    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
     this._favoriteClick = this._favoriteClick.bind(this);
     this._callbacks = {
       editClickCallback,
@@ -53,16 +54,24 @@ export default class TripPointPresenter {
     const to = enabled ? this._tripPointEditView : this._tripPointView;
     toggleView(this._container, from, to);
   }
+  _escKeyDownHandler(evt) {
+    if (evt.key === 'Escape' || evt.key === 'Esc') {
+      evt.preventDefault();
+      this._closePointEditForm();
+    }
+  }
 
   _closePointEditForm() {
     if (this._callbacks.closeClickCallback) {
       this._callbacks.closeClickCallback(this);
+      document.removeEventListener('keydown', this._escKeyDownHandler);
     }
   }
 
   _openPointEditForm() {
     if (this._callbacks.editClickCallback) {
       this._callbacks.editClickCallback(this);
+      document.addEventListener('keydown', this._escKeyDownHandler);
     }
   }
 
