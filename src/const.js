@@ -4,6 +4,10 @@ export const MAX_COUNT_DESCRIPTION = 5;
 export const MIN_PRICE = 100;
 export const MAX_PRICE = 1000;
 export const POINT_ROUTE_COUNT = 15;
+export const COLOURS = {
+  BLACK: '#ffffff',
+  WHITE: '#000000',
+};
 
 export const ViewValues = {
   selectors: {
@@ -11,18 +15,19 @@ export const ViewValues = {
     INFO: '.trip-main',
     FILTERS: '.trip-controls__filters',
     TRIP: '.trip-events',
+    BODY_CONTAINER: '.page-main > .page-body__container',
   },
-  filters: [
-    'Everything',
-    'Future',
-    'Past',
-  ],
+  filters: {
+    EVERYTHING: 'Everything',
+    FUTURE: 'Future',
+    PAST: 'Past',
+  },
   sortTypes: {
-    day: 'day',
-    event: 'event',
-    time: 'time',
-    price: 'price',
-    offers: 'offers',
+    DAY: 'day',
+    EVENT: 'event',
+    TIME: 'time',
+    PRICE: 'price',
+    OFFERS: 'offers',
   },
   pointTypes: [
     {
@@ -62,4 +67,13 @@ export const ViewValues = {
       isInMotion: false,
     },
   ],
+  updateType: {
+    PATCH: 'PATCH',
+    MINOR: 'MINOR',
+    MAJOR: 'MAJOR',
+  },
+  uiViewType: {
+    STATS: 'STATS',
+    TABLE: 'TABLE',
+  },
 };

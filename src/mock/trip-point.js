@@ -1,4 +1,5 @@
-import {appData} from '../app-data';
+import {TripPointRules, CityRules} from '../app-data.js';
+import {nanoid} from 'nanoid';
 import {
   OFFERS,
   MIN_COUNT_DESCRIPTION,
@@ -19,16 +20,16 @@ const getRandomNumber = (a = 0, b = 1) => {
 };
 
 const generatePointType = () => {
-  return appData.pointTypes[getRandomNumber(appData.pointTypes.length)];
+  return TripPointRules.getPointTypes()[getRandomNumber(TripPointRules.getPointTypes().length)];
 };
 
 const generateCity = () => {
-  return appData.cityList[getRandomNumber(appData.cityList.length)];
+  return CityRules.getCityList()[getRandomNumber(CityRules.getCityList().length)];
 };
 
 const generateOffers = (pointType) => {
   const opts = [];
-  const offers = appData.getOffersByTypeName(pointType);
+  const offers = TripPointRules.getOffersByTypeName(pointType);
   const offset = getRandomNumber(0, offers.length);
   const size = getRandomNumber(0, offers.length);
   for (let i = 0; i < size; i++) {
@@ -60,9 +61,8 @@ const createPhotoTemplate = () => {
   return arrayPhoto;
 };
 
-let pointId = 0;
 const generatePointId = () => {
-  return pointId++;
+  return nanoid();
 };
 
 let lastDate = null;
@@ -79,15 +79,16 @@ const generateFavorite = () => {
 };
 
 (() => {
-  for (const tripPointType of appData.pointTypes) {
+  for (const tripPointType of TripPointRules.getPointTypes()) {
     const offers = [];
     for (let i = 0; i < getRandomNumber(2, 6); i++) {
       offers.push({
         title: getRandomInteger(OFFERS),
         price: getRandomNumber(MIN_PRICE, MAX_PRICE),
+        id: nanoid(),
       });
     }
-    appData.setOffersByTypeName(tripPointType.type, offers);
+    TripPointRules.setOffersByTypeName(tripPointType.type, offers);
   }
 })();
 
@@ -107,7 +108,7 @@ const generateFavorite = () => {
     'Kiev',
   ];
   for (const city of cities) {
-    appData.addCity({
+    CityRules.addCity({
       name: city,
       description: generateDescription(),
       pictures: createPhotoTemplate(),

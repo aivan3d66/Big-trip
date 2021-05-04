@@ -1,15 +1,13 @@
-import AbstractViewElement from './abstract-view-element';
-import {handlerTypes} from './handlers';
+import AbstractInteractiveElement from './abstract-interactive-element';
+import {ViewEvents} from './view-events';
 import {TimeUtils} from '../utils/time';
 
-const createDate = (from, to) => {
-  return `<time class="event__date" datetime="${TimeUtils.convertTo_YYYYMMDD(from)}">${TimeUtils.convertTo_MonthDay(to)}</time>`;
+const createDate = (from) => {
+  return `<time class="event__date" datetime="${TimeUtils.convertTo_YYYYMMDD(from)}">${TimeUtils.convertTo_MMMDD(from)}</time>`;
 };
 
 const createType = (type) => {
-  return `<div class="event__type">
-            <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
-          </div>`;
+  return `<div class="event__type"><img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon"></div>`;
 };
 
 const createDestinationTitle = (name) => {
@@ -41,10 +39,10 @@ const createOffer = (title, price) => {
           </li>`;
 };
 
-const createOffersList = (offers) => {
+const createOffers = (offers) => {
   return `<h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
-            ${offers.map((offerItem) => createOffer(offerItem.title, offerItem.price)).join('')}
+            ${offers.map((offer) => createOffer(offer.title, offer.price)).join('')}
           </ul>`;
 };
 
@@ -57,7 +55,7 @@ const createFavoriteButton = (isFavorite) => {
           </button>`;
 };
 
-export default class TripPoint extends AbstractViewElement {
+export default class TripPoint extends AbstractInteractiveElement {
   constructor(tripPoint) {
     super();
     this.tripPoint = tripPoint;
@@ -65,8 +63,18 @@ export default class TripPoint extends AbstractViewElement {
 
   set tripPoint(value) {
     this._tripPoint = value;
-    this._registerHandler(handlerTypes.OPEN_POINT_POPUP, this.getElement().querySelector('.event__rollup-btn'), 'click');
-    this._registerHandler(handlerTypes.FAVORITE_CLICK, this.getElement().querySelector('.event__favorite-btn'), 'click');
+    this._registerEventSupport({
+      parent: this.getElement(),
+      selectorInsideParent: '.event__rollup-btn',
+      handlerUID: ViewEvents.uid.OPEN_POINT_POPUP,
+      eventType: ViewEvents.type.CLICK,
+    });
+    this._registerEventSupport({
+      parent: this.getElement(),
+      selectorInsideParent: '.event__favorite-btn',
+      handlerUID: ViewEvents.uid.FAVORITE_CLICK,
+      eventType: ViewEvents.type.CLICK,
+    });
   }
 
   get tripPoint() {
@@ -76,12 +84,12 @@ export default class TripPoint extends AbstractViewElement {
   getTemplate() {
     return `<li class="trip-events__item">
               <div class="event">
-                ${createDate(this.tripPoint.date_from, this.tripPoint.date_to)}
+                ${createDate(this.tripPoint.date_from)}
                 ${createType(this.tripPoint.type)}
                 ${createDestinationTitle(this.tripPoint.destination.name)}
                 ${createShedule(this.tripPoint.date_from, this.tripPoint.date_to)}
                 ${createBasePrice(this.tripPoint.base_price)}
-                ${createOffersList(this.tripPoint.offers)}
+                ${createOffers(this.tripPoint.offers)}
                 ${createFavoriteButton(this.tripPoint.isFavorite)}
                 <button class="event__rollup-btn" type="button">
                   <span class="visually-hidden">Open event</span>
