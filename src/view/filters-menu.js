@@ -1,5 +1,5 @@
-import AbstractInteractiveElement from './abstract-interactive-element';
-import {ViewEvents} from './view-events';
+import AbstractInteractiveElement from './abstract-interactive-element.js';
+import {ViewEvents} from './view-events.js';
 
 const createFilter = (title, checked) => {
   const idMix = title.toLowerCase();

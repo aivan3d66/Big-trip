@@ -1,4 +1,4 @@
-import AbstractViewElement from '../view/abstract-view-element';
+import AbstractViewElement from '../view/abstract-view-element.js';
 
 export const createElement = (template) => {
   const newElement = document.createElement('div');

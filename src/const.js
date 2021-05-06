@@ -1,14 +1,16 @@
-export const OFFERS = ['Add luggage', 'Switch to comfort class', 'Add meal', 'Choose seats', 'Travel by train', 'Order Uber'];
-export const MIN_COUNT_DESCRIPTION = 1;
-export const MAX_COUNT_DESCRIPTION = 5;
-export const MIN_PRICE = 100;
-export const MAX_PRICE = 1000;
-export const POINT_ROUTE_COUNT = 15;
+export const HOURS_COUNT = 24;
+export const MINUTES_COUNT = 60;
+export const MAX_STATUS_RANGE = 299;
+export const MIN_STATUS_RANGE = 200;
+export const MIN_BAR_LENGTH = 50;
+export const BAR_THICKNESS = 44;
+export const FONT_SIZE = 13;
+export const TITLE_FONT_SIZE = 23;
+export const PADDING_SIZE = 5;
 export const COLOURS = {
   BLACK: '#ffffff',
   WHITE: '#000000',
 };
-
 export const ViewValues = {
   selectors: {
     MENU: '.trip-controls__navigation',
@@ -29,9 +31,18 @@ export const ViewValues = {
     PRICE: 'price',
     OFFERS: 'offers',
   },
+  loadStates: {
+    LOADING: 'LOADING',
+    LOAD_DONE: 'LOAD_DONE',
+    ERROR: 'ERROR',
+  },
   pointTypes: [
     {
       name: 'Taxi',
+      isInMotion: true,
+    },
+    {
+      name: 'Bus',
       isInMotion: true,
     },
     {
@@ -71,9 +82,15 @@ export const ViewValues = {
     PATCH: 'PATCH',
     MINOR: 'MINOR',
     MAJOR: 'MAJOR',
+    INIT: 'INIT',
+    INIT_ERROR: 'INIT_ERROR',
+    ERROR: 'ERROR',
   },
   uiViewType: {
     STATS: 'STATS',
     TABLE: 'TABLE',
+  },
+  uiNumbers: {
+    MAX_CITY_COUNT_IN_HEADER: 3,
   },
 };

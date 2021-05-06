@@ -1,31 +1,28 @@
 import TripPointEditorView from '../view/trip-point-editor.js';
 import TripPointView from '../view/trip-point.js';
-import { ViewEvents } from '../view/view-events.js';
-import { renderElement, toggleView, removeView } from '../utils/ui.js';
-import { ViewValues } from '../const.js';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import {ViewEvents} from '../view/view-events.js';
+import {renderElement, toggleView, removeView} from '../utils/ui.js';
 
 export default class TripPointPresenter {
-  constructor({containerForTripPoints, model, openEditFormCallback, closeEditFormCallback} = {}) {
+
+  constructor({containerForTripPoints, openEditFormCallback, closeEditFormCallback, updatePointDataCallback, deletePointCallback} = {}) {
     this._container = containerForTripPoints;
     this._tripPointData = null;
     this._tripPointView = null;
     this._tripPointEditView = null;
-    this._openEditFormCallback = openEditFormCallback;
-    this._closeEditFormCallback = closeEditFormCallback;
+    this._callbacks = {
+      onOpenEditForm: openEditFormCallback,
+      onCloseEditForm: closeEditFormCallback,
+      onUpdatePointData: updatePointDataCallback,
+      onDeletePoint: deletePointCallback,
+    };
     this._handleOpenEditFormButtonClick = this._handleOpenEditFormButtonClick.bind(this);
     this._handleFavoriteButtonClick = this._handleFavoriteButtonClick.bind(this);
     this._handleCloseEditFormButtonClick = this._handleCloseEditFormButtonClick.bind(this);
     this._handleSavePointChangesButtonClick = this._handleSavePointChangesButtonClick.bind(this);
     this._handleDeletePointButtonClick = this._handleDeletePointButtonClick.bind(this);
-    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
-    this._mode = Mode.DEFAULT;
-    this._model = model;
   }
+
   init(tripPointData) {
     this._tripPointData = tripPointData;
 
@@ -47,9 +44,17 @@ export default class TripPointPresenter {
     }
     toggleView(this._container, prevPointView, this._tripPointView);
     toggleView(this._container, prevEditPointView, this._tripPointEditView);
-
     removeView(prevPointView);
     removeView(prevEditPointView);
+  }
+
+  destroy() {
+    removeView(this._tripPointView);
+    removeView(this._tripPointEditView);
+  }
+
+  get tripPointData() {
+    return this._tripPointData;
   }
 
   setEditModeEnabled(enabled) {
@@ -60,24 +65,21 @@ export default class TripPointPresenter {
       this._tripPointEditView.tripPoint = this._tripPointData;
     }
   }
-  _escKeyDownHandler(evt) {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
-      this._handleCloseEditFormButtonClick();
-    }
+
+  setBlock(isBlocked) {
+    this._tripPointEditView.setBlock(isBlocked);
   }
+
+  unlockWithError() {
+    this._tripPointEditView.unlockWithError();
+  }
+
   _handleCloseEditFormButtonClick() {
-    if (this._closeEditFormCallback) {
-      this._closeEditFormCallback(this);
-      document.removeEventListener('keydown', this._escKeyDownHandler);
-    }
+    this._invokeCallback(this._callbacks.onCloseEditForm, this);
   }
 
   _handleOpenEditFormButtonClick() {
-    if (this._openEditFormCallback) {
-      this._openEditFormCallback(this);
-      document.addEventListener('keydown', this._escKeyDownHandler);
-    }
+    this._invokeCallback(this._callbacks.onOpenEditForm, this);
   }
 
   _handleFavoriteButtonClick() {
@@ -86,23 +88,20 @@ export default class TripPointPresenter {
 
   _handleSavePointChangesButtonClick() {
     this._commitUpdate(this._tripPointEditView.tripPoint);
-    this.setEditModeEnabled(false);
-  }
-
-  _handleDeletePointButtonClick() {
-    this._model.deleteTripPoint(ViewValues.updateType.MAJOR, this._tripPointData);
   }
 
   _commitUpdate(updatedObjectPart) {
-    this._model.updateTripPoint(ViewValues.updateType.PATCH, Object.assign({}, this._tripPointData, updatedObjectPart));
+    this._invokeCallback(this._callbacks.onUpdatePointData, Object.assign({}, this._tripPointData, updatedObjectPart));
   }
 
-  destroy() {
-    removeView(this._tripPointView);
-    removeView(this._tripPointEditView);
+  _handleDeletePointButtonClick() {
+    this._invokeCallback(this._callbacks.onDeletePoint, this._tripPointData);
   }
 
-  get tripPointData() {
-    return this._tripPointData;
+  _invokeCallback(cFunc, ...params) {
+    if (!cFunc) {
+      return;
+    }
+    cFunc(...params);
   }
 }

@@ -1,16 +1,16 @@
-import AbstractViewElement from './abstract-view-element';
-import {createDefaultChart} from './stats-charts';
-import {TimeUtils} from '../utils/time';
+import AbstractViewElement from './abstract-view-element.js';
+import {createDefaultChart} from './stats-charts.js';
+import {TimeUtils} from '../utils/time.js';
 
 export default class StatisticsView extends AbstractViewElement {
   constructor() {
     super();
   }
 
-  createMoneyChart (labelDataObject = {}){
+  createMoneyChart(labelDataObject = {}) {
     createDefaultChart({
       ctx: this.getElement().querySelector('.statistics__chart--money'),
-      formatter: (value) => `€ ${value}`,
+      formatter: (val) => `€ ${val}`,
       title: 'MONEY',
       labels: Object.keys(labelDataObject),
       data: Object.values(labelDataObject),
@@ -20,7 +20,7 @@ export default class StatisticsView extends AbstractViewElement {
   createTypeChart(labelDataObject = {}) {
     createDefaultChart({
       ctx: this.getElement().querySelector('.statistics__chart--transport'),
-      formatter: (value) => `${value}x`,
+      formatter: (val) => `${val}x`,
       title: 'TYPE',
       labels: Object.keys(labelDataObject),
       data: Object.values(labelDataObject),
@@ -30,7 +30,7 @@ export default class StatisticsView extends AbstractViewElement {
   createTimeChart(labelDataObject = {}) {
     createDefaultChart({
       ctx: this.getElement().querySelector('.statistics__chart--time'),
-      formatter: (value) => value ? TimeUtils.getDiff(0, value) : 0,
+      formatter: (val) => val ? TimeUtils.getDiff(0, val) : 0,
       title: 'TIME-SPEND',
       labels: Object.keys(labelDataObject),
       data: Object.values(labelDataObject),

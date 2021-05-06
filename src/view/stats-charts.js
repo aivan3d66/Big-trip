@@ -1,6 +1,6 @@
 import Chart from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import {COLOURS} from '../const';
+import {COLOURS, MIN_BAR_LENGTH, BAR_THICKNESS, FONT_SIZE, TITLE_FONT_SIZE, PADDING_SIZE} from '../const';
 
 export const createDefaultChart = ({ctx, formatter, title, labels, data} = {}) => {
   return new Chart(ctx, {
@@ -13,15 +13,15 @@ export const createDefaultChart = ({ctx, formatter, title, labels, data} = {}) =
         backgroundColor: COLOURS.BLACK,
         hoverBackgroundColor: COLOURS.BLACK,
         anchor: 'start',
-        minBarLength: 50,
-        barThickness: 44,
+        minBarLength: MIN_BAR_LENGTH,
+        barThickness: BAR_THICKNESS,
       }],
     },
     options: {
       plugins: {
         datalabels: {
           font: {
-            size: 13,
+            size: FONT_SIZE,
           },
           color: COLOURS.WHITE,
           anchor: 'end',
@@ -33,15 +33,15 @@ export const createDefaultChart = ({ctx, formatter, title, labels, data} = {}) =
         display: true,
         text: title,
         fontColor: COLOURS.WHITE,
-        fontSize: 23,
+        fontSize: TITLE_FONT_SIZE,
         position: 'left',
       },
       scales: {
         yAxes: [{
           ticks: {
             fontColor: COLOURS.WHITE,
-            padding: 5,
-            fontSize: 13,
+            padding: PADDING_SIZE,
+            fontSize: FONT_SIZE,
           },
           gridLines: {
             display: false,

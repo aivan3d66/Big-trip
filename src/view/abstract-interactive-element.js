@@ -1,6 +1,6 @@
-import AbstractViewElement from './abstract-view-element';
-import {toggleView} from '../utils/ui';
-import {restoreFocus, getFocusObject} from '../utils/ui';
+import AbstractViewElement from './abstract-view-element.js';
+import {toggleView} from '../utils/ui.js';
+import {restoreFocus, getFocusObject} from '../utils/ui.js';
 
 const bindEventListenerContext = function (fn, context, handlerType) {
   return function (...args) {
@@ -27,7 +27,7 @@ export default class AbstractInteractiveElement extends AbstractViewElement {
     const upd = {
       state: {},
     };
-    upd[dataName] =  dataCreateFunctionByTextFieldValue(event.target.value);
+    upd[dataName] = dataCreateFunctionByTextFieldValue(event.target.value);
     upd.state[stateName] = getFocusObject(event.target);
     this.updateData(upd);
   }
@@ -47,6 +47,7 @@ export default class AbstractInteractiveElement extends AbstractViewElement {
     if (!update) {
       return;
     }
+
     this._data = Object.assign(
       {},
       this._data,
@@ -56,6 +57,7 @@ export default class AbstractInteractiveElement extends AbstractViewElement {
     if (withoutElementUpdate) {
       return;
     }
+
     this.updateElement();
   }
 
@@ -83,10 +85,10 @@ export default class AbstractInteractiveElement extends AbstractViewElement {
       parent,
       element: parent.querySelector(selector),
       eventHandler: bindEventListenerContext(this._handler, this, handlerUID),
-      registerHandler: function() {
+      registerHandler: function () {
         this.element.addEventListener(this.eventType, this.eventHandler);
       },
-      unregisterHandler: function() {
+      unregisterHandler: function () {
         this.element.removeEventListener(this.eventType, this.eventHandler);
       },
     };

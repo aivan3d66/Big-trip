@@ -1,14 +1,25 @@
-import Observer from '../utils/observer';
-import {nanoid} from 'nanoid';
+import Observer from '../utils/observer.js';
+import {ViewValues} from '../const.js';
 
 export default class PointsModel extends Observer {
-  constructor() {
+  constructor(api) {
     super();
     this._tripPoints = [];
+    this._api = api;
+    this._commitError = this._commitError.bind(this);
   }
 
   setTripPoints(pointsArr) {
     this._tripPoints = pointsArr.slice();
+    this._notify(ViewValues.updateType.INIT);
+  }
+
+  commitInitError() {
+    this._notify(ViewValues.updateType.INIT_ERROR);
+  }
+
+  _commitError() {
+    this._notify(ViewValues.updateType.ERROR);
   }
 
   getTripPoints() {
@@ -21,14 +32,15 @@ export default class PointsModel extends Observer {
     if (index === -1) {
       throw new Error('Trip point is not exists');
     }
-
-    this._tripPoints = [
-      ...this._tripPoints.slice(0, index),
-      tripPointData,
-      ...this._tripPoints.slice(index + 1),
-    ];
-
-    this._notify(updateType, tripPointData);
+    this._api.updateTripPoint(tripPointData)
+      .then((updatedPoint) => {
+        this._tripPoints = [
+          ...this._tripPoints.slice(0, index),
+          updatedPoint,
+          ...this._tripPoints.slice(index + 1),
+        ];
+        this._notify(updateType, updatedPoint);
+      }).catch(this._commitError);
   }
 
   deleteTripPoint(updateType, tripPointForDelete) {
@@ -37,21 +49,24 @@ export default class PointsModel extends Observer {
     if (index === -1) {
       throw new Error('Trip point is not exists');
     }
-
-    this._tripPoints = [
-      ...this._tripPoints.slice(0, index),
-      ...this._tripPoints.slice(index + 1),
-    ];
-
-    this._notify(updateType);
+    this._api.deleteTripPoint(Object.assign({}, tripPointForDelete))
+      .then(() => {
+        this._tripPoints = [
+          ...this._tripPoints.slice(0, index),
+          ...this._tripPoints.slice(index + 1),
+        ];
+        this._notify(updateType);
+      }).catch(this._commitError);
   }
 
   addTripPoint(updateType, tripPointData) {
-    if(!tripPointData) {
+    if (!tripPointData) {
       return;
     }
-    const newPoint = Object.assign(tripPointData, {id: nanoid()});
-    this._tripPoints.push(newPoint);
-    this._notify(updateType, newPoint);
+    this._api.addTripPoint(Object.assign({}, tripPointData))
+      .then((newPoint) => {
+        this._tripPoints.push(newPoint);
+        this._notify(updateType, newPoint);
+      }).catch(this._commitError);
   }
 }

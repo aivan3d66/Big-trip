@@ -1,20 +1,23 @@
-import MenuView from './view/menu';
-import StatisticsPresenter from './presenter/stats';
-import HeaderPresenter from './presenter/header';
-import FiltersPresenter from './presenter/filters';
-import TripPresenter from './presenter/trip';
-import PointsModel from './model/points';
-import FiltersModel from './model/filters';
-import {getComponent, renderElement} from './utils/ui';
-import {generateTripPointData} from './mock/trip-point';
-import {ViewValues, POINT_ROUTE_COUNT} from './const';
+import MenuView from './view/top-menu.js';
+import StatisticsPresenter from './presenter/stats.js';
+import HeaderPresenter from './presenter/header.js';
+import FiltersPresenter from './presenter/filters.js';
+import TripPresenter from './presenter/trip.js';
+import PointsModel from './model/points.js';
+import FiltersModel from './model/filters.js';
+import Api from './api.js';
+import {getComponent, renderElement} from './utils/ui.js';
+import {ViewValues} from './const.js';
+import {CityRules, TripPointRules} from './app-data.js';
+
+const AUTHORIZATION = 'Basic KMh6KWDNNVywmlOMihTM';
+const END_POINT = 'https://14.ecmascript.pages.academy/big-trip';
+const api = new Api(END_POINT, AUTHORIZATION);
 
 const models = {
-  points: new PointsModel(),
+  points: new PointsModel(api),
   filters: new FiltersModel(),
 };
-
-models.points.setTripPoints(new Array(POINT_ROUTE_COUNT).fill().map(() => generateTripPointData()));
 
 const menuCallback = (uiType) => {
   viewItems.menu.setUiViewType(uiType);
@@ -47,8 +50,6 @@ const viewItems = {
 };
 
 const renderApp = () => {
-  renderElement(getComponent(ViewValues.selectors.MENU), viewItems.menu);
-  viewItems.menu.init();
   viewItems.headerPresenter.init();
   viewItems.filtersPresenter.init();
   viewItems.statisticsPresenter.init();
@@ -56,8 +57,28 @@ const renderApp = () => {
   menuCallback(ViewValues.uiViewType.TABLE);
 };
 
-renderApp();
+const initApp = () => {
+  renderApp();
+  getComponent(ViewValues.selectors.INFO).querySelector('.trip-main__event-add-btn').addEventListener('click', () => {
+    viewItems.tripPresenter.setAddNewPointMode();
+  });
+};
 
-getComponent(ViewValues.selectors.INFO).querySelector('.trip-main__event-add-btn').addEventListener('click', () => {
-  viewItems.tripPresenter.setAddNewPointMode(true);
-});
+initApp();
+
+api.getDestinations()
+  .then((cityList) => {
+    cityList.forEach((city) => CityRules.addCity(city));
+    return api.getOffers();
+  }).then((offers) => {
+    offers.forEach((offer) => TripPointRules.setOffersByTypeName(offer.type, offer.offers));
+    return api.getTripPoints();
+  }).then((points) => {
+    models.points.setTripPoints(points);
+    models.filters.init();
+    renderElement(getComponent(ViewValues.selectors.MENU), viewItems.menu);
+    viewItems.menu.init();
+  }).catch(() => {
+    models.points.commitInitError();
+  });
+

@@ -1,30 +1,31 @@
 import dayjs from 'dayjs';
+import {HOURS_COUNT, MINUTES_COUNT} from '../const';
 
 export const TimeUtils = {
-  convertTo_MMMDD: (isoTimeStampString) => {
+  convertToMMMDD: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('MMM DD');
   },
-  convertTo_MMDD: (isoTimeStampString) => {
+  convertToMMDD: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('MM DD');
   },
-  convertTo_YYYYMMDD: (isoTimeStampString) => {
+  convertToYYYYMMDD: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('YYYY-MM-DD');
   },
-  convertTo_YYYYMMDD_HHMM: (isoTimeStampString) => {
+  convertToYYYYMMDDHHMM: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('YYYY-MM-DDTHH:mm');
   },
-  convertTo_DDMMYY_HHMM: (isoTimeStampString) => {
+  convertToDDMMYYHHMM: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('DD/MM/YY HH:mm');
   },
-  convertTo_HHMM: (isoTimeStampString) => {
+  convertToHHMM: (isoTimeStampString) => {
     return dayjs(isoTimeStampString).format('HH:mm');
   },
   getDiff: (isoDateStrFrom, isoDateStrTo) => {
     const from = dayjs(isoDateStrFrom);
     const to = dayjs(isoDateStrTo);
     const dayDiff = Math.abs(to.diff(from, 'd'));
-    const hourDiff = Math.abs(to.diff(from, 'h')) % 24;
-    const minDiff = Math.abs(to.diff(from, 'm')) % 60;
+    const hourDiff = Math.abs(to.diff(from, 'h')) % HOURS_COUNT;
+    const minDiff = Math.abs(to.diff(from, 'm')) % MINUTES_COUNT;
     const formatterArgs = ['en-US', {
       minimumIntegerDigits: 2,
       useGrouping: false,

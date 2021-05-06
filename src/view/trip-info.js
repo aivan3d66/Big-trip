@@ -1,5 +1,6 @@
-import AbstractViewElement from './abstract-view-element';
-import {TimeUtils} from '../utils/time';
+import AbstractViewElement from './abstract-view-element.js';
+import {TimeUtils} from '../utils/time.js';
+import {ViewValues} from '../const.js';
 
 const createDateLimits = (from, to) => {
   let inner = '';
@@ -7,7 +8,7 @@ const createDateLimits = (from, to) => {
     const dateLimits = TimeUtils.getDuration(from, to);
     inner = `${dateLimits[0]}&nbsp;&mdash;&nbsp;${dateLimits[1]}`;
   } else if (from) {
-    inner = TimeUtils.convertTo_MMMDD(from);
+    inner = TimeUtils.convertToMMMDD(from);
   }
   return `<p class="trip-info__dates">${inner}</p>`;
 };
@@ -19,12 +20,12 @@ const createMainInfo = (tripPointsArray = []) => {
     }
     return acc;
   }, []);
-  if (cities.length > 5) {
-    cities = [cities[0], '...' ,cities[cities.length - 1]];
+  if (cities.length > ViewValues.uiNumbers.MAX_CITY_COUNT_IN_HEADER) {
+    cities = [cities[0], '...', cities[cities.length - 1]];
   }
   return `<div class="trip-info__main">
             <h1 class="trip-info__title">${cities.join(' &mdash; ')}</h1>
-            ${tripPointsArray.length ? createDateLimits(tripPointsArray[0].date_from, tripPointsArray[tripPointsArray.length - 1].date_to)  : ''}
+            ${tripPointsArray.length ? createDateLimits(tripPointsArray[0].date_from, tripPointsArray[tripPointsArray.length - 1].date_to) : ''}
           </div>`;
 };
 
@@ -42,7 +43,9 @@ export default class TripInfo extends AbstractViewElement {
 
   getTemplate() {
     const totalCost = this._tripPointsArray.reduce((acc, tp) => {
-      return acc + tp.base_price + tp.offers.reduce((med, offer) => { return med + offer.price; }, 0);
+      return acc + tp.basePrice + tp.offers.reduce((med, offer) => {
+        return med + offer.price;
+      }, 0);
     }, 0);
     return `<section class="trip-main__trip-info  trip-info">
             ${createMainInfo(this._tripPointsArray)}

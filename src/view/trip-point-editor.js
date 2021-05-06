@@ -1,7 +1,7 @@
-import AbstractInteractiveElement from './abstract-interactive-element';
-import {ViewEvents} from './view-events';
-import {CityRules, TripPointRules} from '../app-data';
-import {TimeUtils} from '../utils/time';
+import AbstractInteractiveElement from './abstract-interactive-element.js';
+import {ViewEvents} from './view-events.js';
+import {CityRules, TripPointRules} from '../app-data.js';
+import {TimeUtils} from '../utils/time.js';
 import flatpickr from 'flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
 
@@ -12,9 +12,9 @@ const parseTripPoint = (tripPoint = {}) => {
     type = TripPointRules.getPointTypeByIndex(0).type,
     destination = CityRules.getCityByIndex(0),
     offers = [],
-    base_price = 0,
-    date_from = date_,
-    date_to = date_,
+    basePrice = 0,
+    dateFrom = date_,
+    dateTo = date_,
     isFavorite = false,
   } = tripPoint;
 
@@ -23,9 +23,9 @@ const parseTripPoint = (tripPoint = {}) => {
     type,
     destination,
     offers,
-    base_price,
-    date_from,
-    date_to,
+    basePrice,
+    dateFrom,
+    dateTo,
     isFavorite,
     isEditMode: id !== 'new',
     isDestinationExists: !!CityRules.getCity(destination.name),
@@ -57,7 +57,7 @@ const createEventTypeMenuButton = (id, type) => {
 
 const createDestinationDataList = (id) => {
   return `<datalist id="destination-list-${id}">
-            ${CityRules.getCityList().map((city) => '<option value="' + city.name + '"></option>')}
+            ${CityRules.getCityList().map((c) => '<option value="' + c.name + '"></option>')}
           </datalist>`;
 };
 
@@ -105,25 +105,21 @@ const createHeader = (tripPoint) => {
   return `<header class="event__header">
             ${createEventTypeMenuButton(tripPoint.id, tripPoint.type)}
             ${createDestination(tripPoint.id, tripPoint.type, tripPoint.destination.name, tripPoint.state)}
-            ${createDates(tripPoint.id, TimeUtils.convertTo_DDMMYY_HHMM(tripPoint.date_from), TimeUtils.convertTo_DDMMYY_HHMM(tripPoint.date_to))}
-            ${createBasePrice(tripPoint.id, tripPoint.base_price)}
+            ${createDates(tripPoint.id, TimeUtils.convertToDDMMYYHHMM(tripPoint.dateFrom), TimeUtils.convertToDDMMYYHHMM(tripPoint.dateTo))}
+            ${createBasePrice(tripPoint.id, tripPoint.basePrice)}
             ${createButtons(tripPoint.isEditMode, tripPoint.isDestinationExists)}
           </header>`;
 };
-
-const getOfferIdFromTitle = (title) => {
-  return title.toLowerCase().replaceAll(/\s+/gm, '_');
-};
-
 const createOffer = (offer, pointId, offers) => {
-  const checked = offers.find((element) => { return element.title === offer.title; });
-  const offerId = getOfferIdFromTitle(offer.title);
+  const checked = offers.find((el) => {
+    return el.title === offer.title;
+  });
   return `<div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerId}-${pointId}" type="checkbox" name="event-offer-${offerId}" ${checked ? 'checked' : ''}>
-            <label class="event__offer-label" data-offer-id='${offerId}' for="event-offer-${offerId}-${pointId}">
-              <span class="event__offer-title" data-offer-id='${offerId}'>${offer.title}</span>
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}-${pointId}" type="checkbox" name="event-offer-${offer.id}" ${checked ? 'checked' : ''}>
+            <label class="event__offer-label" data-offer-id='${offer.id}' for="event-offer-${offer.id}-${pointId}">
+              <span class="event__offer-title" data-offer-id='${offer.id}'>${offer.title}</span>
               +€&nbsp;
-              <span class="event__offer-price" data-offer-id='${offerId}'>${offer.price}</span>
+              <span class="event__offer-price" data-offer-id='${offer.id}'>${offer.price}</span>
             </label>
           </div>`;
 };
@@ -151,7 +147,7 @@ const createPicture = (url) => {
 const createPictures = (pictures = []) => {
   return `<div class="event__photos-container">
             <div class="event__photos-tape">
-            ${pictures.map((picture) => createPicture(picture.src)).join('')}
+            ${pictures.map((p) => createPicture(p.src)).join('')}
             </div>
           </div>`;
 };
@@ -171,10 +167,8 @@ export default class TripPointEditor extends AbstractInteractiveElement {
     this._data = parseTripPoint(tripPoint);
     this._calendar = null;
     this._init();
-    //
     this._dateChanged = this._dateChanged.bind(this);
     this._calendarClosed = this._calendarClosed.bind(this);
-    //
     this._wrapAsInternalListener(this._eventTypeListClick, ViewEvents.uid.EVENT_TYPE_CLICK);
     this._wrapAsInternalListener(this._destinationTextFieldEvent, ViewEvents.uid.DESTINATION_FIELD_INPUT);
     this._wrapAsInternalListener(this._priceTextFieldEvent, ViewEvents.uid.PRICE_FIELD_INPUT);
@@ -200,12 +194,12 @@ export default class TripPointEditor extends AbstractInteractiveElement {
 
   _offersListClick(evt) {
     if (evt.event.target.dataset.offerId) {
-      const filter = (off) => getOfferIdFromTitle(off.title) === evt.event.target.dataset.offerId;
+      const filter = (off) => off.id === evt.event.target.dataset.offerId;
       const offerInModel = TripPointRules.getOffersByTypeName(this._data.type).find(filter);
       const offerInData = this._data.offers.find(filter);
       let offers = this._data.offers.slice();
       if (offerInData) {
-        offers = offers.filter((off) => getOfferIdFromTitle(off.title) !== offerInData.title);
+        offers = offers.filter((offer) => offer.title !== offerInData.title);
       } else {
         offers.push(offerInModel);
       }
@@ -226,20 +220,20 @@ export default class TripPointEditor extends AbstractInteractiveElement {
   _priceTextFieldEvent(evt) {
     this._performDefaultCallbackOnTextField({
       event: evt.event,
-      dataName: 'base_price',
+      dataName: 'basePrice',
       stateName: 'price',
-      dataCreateFunctionByTextFieldValue: (value) => isNaN(parseInt(value)) ? '' : parseInt(value),
-      compareWith: this._data.base_price,
+      dataCreateFunctionByTextFieldValue: (value) => isNaN(parseInt(value, 10)) ? '' : parseInt(value, 10),
+      compareWith: this._data.basePrice,
     });
   }
 
   _showCalendar({selector, date, minDate, maxDate}) {
     if (!this._calendar) {
       this._calendar = flatpickr(this.getElement().querySelector(selector), {
-        dateFormat: 'd/m/y H:i',
-        enableTime: true,
-        time_24hr: true,
-        onClose: this._calendarClosed,
+        'dateFormat': 'd/m/y H:i',
+        'enableTime': true,
+        'time_24hr': true,
+        'onClose': this._calendarClosed,
       });
     } else {
       this._calendar.input = this.getElement().querySelector(selector);
@@ -258,11 +252,11 @@ export default class TripPointEditor extends AbstractInteractiveElement {
       return;
     }
     const update = {};
-    if (this._calendar.config.minDate) { //date-to
-      update.date_to = this._calendar._dateCache;
+    if (this._calendar.config.minDate) { // date-to
+      update.dateTo = this._calendar._dateCache;
     }
-    if (this._calendar.config.maxDate) { //date-from
-      update.date_from = this._calendar._dateCache;
+    if (this._calendar.config.maxDate) { // date-from
+      update.dateFrom = this._calendar._dateCache;
     }
     this._calendar._dateCache = null;
     this.updateData(update);
@@ -273,10 +267,10 @@ export default class TripPointEditor extends AbstractInteractiveElement {
   }
 
   _dateTextFieldClick(evt) {
-    const selector = `#event-${evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? 'start': 'end'}-time-${this._data.id}`;
-    const date = Date.parse(evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? this._data.date_from : this._data.date_to);
-    const minDate = evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? null : Date.parse(this._data.date_from);
-    const maxDate = evt.eventUID === ViewEvents.uid.END_DATE_CLICK ? null : Date.parse(this._data.date_to);
+    const selector = `#event-${evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? 'start' : 'end'}-time-${this._data.id}`;
+    const date = Date.parse(evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? this._data.dateFrom : this._data.dateTo);
+    const minDate = evt.eventUID === ViewEvents.uid.START_DATE_CLICK ? null : Date.parse(this._data.dateFrom);
+    const maxDate = evt.eventUID === ViewEvents.uid.END_DATE_CLICK ? null : Date.parse(this._data.dateTo);
     this._showCalendar({selector, date, minDate, maxDate});
   }
 
@@ -321,6 +315,25 @@ export default class TripPointEditor extends AbstractInteractiveElement {
 
   set tripPoint(value) {
     this.updateData(parseTripPoint(value));
+  }
+
+  setBlock(isBlocked) {
+    if(isBlocked) {
+      this.getElement().querySelector('.event--edit').classList.add('event--edit__performing-operation');
+      return;
+    }
+    this.getElement().querySelector('.event--edit').classList.remove('event--edit__performing-operation');
+    this.getElement().querySelector('.event--edit').classList.remove('event--edit__performing-operation-error');
+  }
+
+  unlockWithError() {
+    this.getElement().querySelector('.event--edit').classList.add('shake');
+    this.getElement().querySelector('.event--edit').classList.remove('event--edit__performing-operation');
+    this.getElement().querySelector('.event--edit').classList.add('event--edit__performing-operation-error');
+    setTimeout(() => {
+      this.getElement().querySelector('.event--edit').classList.remove('shake');
+      this.setBlock(false);
+    }, 2000);
   }
 
   getTemplate() {
