@@ -12,17 +12,17 @@ const SuccessHTTPStatusRange = {
   MAX: MAX_STATUS_RANGE,
 };
 
-const AdapterRools = {
+const AdapterTools = {
   'base_price': 'basePrice',
   'date_from': 'dateFrom',
   'date_to': 'dateTo',
   'is_favorite': 'isFavorite',
 };
 
-const AdapterRoolsReversed = {};
+const AdapterToolsReversed = {};
 
-Object.keys(AdapterRools).forEach((backendKey) => {
-  AdapterRoolsReversed[AdapterRools[backendKey]] = backendKey;
+Object.keys(AdapterTools).forEach((backendKey) => {
+  AdapterToolsReversed[AdapterTools[backendKey]] = backendKey;
 });
 
 export default class Api {
@@ -144,11 +144,11 @@ export default class Api {
   }
 
   static adaptToFront(jsonObj) {
-    return Api._changeKeys(jsonObj, AdapterRools);
+    return Api._changeKeys(jsonObj, AdapterTools);
   }
 
   static adaptToBack(jsonObj) {
-    return JSON.stringify(Api._changeKeys(jsonObj, AdapterRoolsReversed));
+    return JSON.stringify(Api._changeKeys(jsonObj, AdapterToolsReversed));
   }
 
   static toJSON(response) {
