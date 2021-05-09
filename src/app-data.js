@@ -1,107 +1,115 @@
-import {ViewValues} from './const';
+import {ViewValues} from './const.js';
+import {TimeUtils} from './utils/time.js';
+import {nanoid} from 'nanoid';
 
-const createPointType = (title, isInMotion = true) => {
+const pointTypes = ViewValues.pointTypes.map((value) => {
   return {
-    title,
-    type: title.toLowerCase(),
+    title: value.name,
+    type: value.name.toLowerCase(),
     offers: [],
-    isInMotion,
+    isInMotion: value.isInMotion,
   };
+});
+
+const _setOffers = (getMethod, selector, offers) => {
+  const t = getMethod(selector);
+  if (t) {
+    t.offers = [...offers].map((offer) => Object.assign(offer, {id: nanoid()}));
+  }
 };
 
-class AppData {
-  constructor() {
-    this._pointTypes = ViewValues.pointTypes.map((value) => createPointType(value.name, value.isInMotion));
-    this._filters = ViewValues.filters;
-    this._sortTypes = Object.values(ViewValues.sortTypes);
-    this._cityListObject = {};
-    this._cityList = [];
-  }
+export const TripPointRules = {
+  getPointTypes: () => pointTypes,
+  getPointTypeByIndex: (i) => pointTypes[i],
+  getPointTypeByTypeName: (type) => pointTypes.find((value) => value.type === type),
+  getPointTypeByTitle: (title) => pointTypes.find((value) => value.title === title),
 
-  get pointTypes() {
-    return this._pointTypes;
-  }
+  setOffersByTypeName: function (type, offers) {
+    _setOffers(this.getPointTypeByTypeName, type, offers);
+  },
 
-  get filters() {
-    return this._filters;
-  }
+  setOffersByTypeTitle: function (title, offers) {
+    _setOffers(this.getPointTypeByTitle, title, offers);
+  },
 
-  get sortTypes() {
-    return this._sortTypes;
-  }
-
-  get cityList() {
-    return this._cityList;
-  }
-  getPointTypeByTypeName(type) {
-    return this._pointTypes.find((value) => value.type === type);
-  }
-
-  getPointTypeByTitle(title) {
-    return this._pointTypes.find((value) => value.title === title);
-  }
-
-  setOffersByTypeName(type, offers) {
-    const offerType = this.getPointTypeByTypeName(type);
-    if (offerType) {
-      offerType.offers = [...offers];
-    }
-  }
-
-  setOffersByTypeTitle(title, offers) {
-    const offerTitle = this.getPointTypeByTitle(title);
-    if (offerTitle) {
-      offerTitle.offers = [...offers];
-    }
-  }
-
-  getOffersByTypeName(type) {
+  getOffersByTypeName: function (type) {
     const {
       offers = [],
     } = this.getPointTypeByTypeName(type);
     return offers;
-  }
+  },
 
-  getOffersByTitle(title) {
+  getOffersByTitle: function (title) {
     const {
       offers = [],
     } = this.getPointTypeByTitle(title);
     return offers;
-  }
+  },
+};
 
-  addCity({name, description = '', pictures = []} = {}) {
+const filters = Object.values(ViewValues.filters);
+const filtersFunctions = {
+  [ViewValues.filters.EVERYTHING]: () => true,
+  [ViewValues.filters.FUTURE]: (point) => TimeUtils.isInFuture(point.dateFrom) || TimeUtils.isCurrent(point.dateFrom, point.dateTo),
+  [ViewValues.filters.PAST]: (point) => TimeUtils.isInPast(point.dateTo) || TimeUtils.isCurrent(point.dateFrom, point.dateTo),
+};
+
+export const FiltersRules = {
+  getFilters: () => filters,
+  getFiltersFunctions: () => filtersFunctions,
+  getFilterFunction: (filterType) => filtersFunctions[filterType],
+};
+
+const sortTypes = Object.values(ViewValues.sortTypes);
+const getOffersCost = (tripPoint) => {
+  return tripPoint.offers.reduce((acc, offer) => (acc + offer.price), 0);
+};
+const sortFunctions = {
+  [ViewValues.sortTypes.DAY]: (a, b) => TimeUtils.compare(a.dateFrom, b.dateFrom),
+  [ViewValues.sortTypes.EVENT]: (a, b) => a.type.localeCompare(b.type),
+  [ViewValues.sortTypes.TIME]: (a, b) => TimeUtils.compare(a.dateFrom, a.dateTo) - TimeUtils.compare(b.dateFrom, b.dateTo),
+  [ViewValues.sortTypes.PRICE]: (a, b) => {
+    return b.basePrice - a.basePrice;
+  },
+  [ViewValues.sortTypes.OFFERS]: (a, b) => {
+    return getOffersCost(b) - getOffersCost(a);
+  },
+};
+
+export const SortRules = {
+  getSortTypes: () => sortTypes,
+  getSortFunctions: () => sortFunctions,
+  getSortFunction: (sortType) => sortFunctions[sortType],
+};
+
+const cityList = [];
+export const CityRules = {
+  getCityList: () => cityList,
+  addCity: ({name, description = '', pictures = []} = {}) =>{
     if (name) {
-      this._cityListObject[`${name}`] = {
-        description,
-        pictures,
-      };
-      const city = this._cityList.find((value) => value.name === name);
-      if (city) {
-        this._cityList[this._cityList.indexOf(city)] = {name, description, pictures};
+      const c = cityList.find((value) => value.name === name);
+      if (c) {
+        cityList[cityList.indexOf(c)] = {name, description, pictures};
       } else {
-        this._cityList.push({name, description, pictures});
+        cityList.push({name, description, pictures});
       }
-
     }
-  }
+  },
 
-  getCity(name) {
-    return `${name}` in this._cityListObject ? this._cityListObject[`${name}`] : undefined;
-  }
+  getCity: (name) => cityList.find((city) => city.name === name),
+  getCityByIndex: (i) => cityList[i],
 
-  getCityPictures(name) {
+  getCityPictures: function (name) {
     const {
       pictures = [],
     } = this.getCity(name);
     return pictures;
-  }
+  },
 
-  getCityDescription(name) {
+  getCityDescription: function (name) {
     const {
       description = [],
     } = this.getCity(name);
     return description;
-  }
-}
-
-export const appData = new AppData();
+  },
+};

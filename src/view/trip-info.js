@@ -1,21 +1,31 @@
 import AbstractViewElement from './abstract-view-element.js';
-import {TimeUtils} from '../utils/time';
+import {TimeUtils} from '../utils/time.js';
+import {ViewValues} from '../const.js';
 
 const createDateLimits = (from, to) => {
   let inner = '';
   if (from && to) {
-    const dateLimits = TimeUtils.getDateDiff(from, to);
+    const dateLimits = TimeUtils.getDuration(from, to);
     inner = `${dateLimits[0]}&nbsp;&mdash;&nbsp;${dateLimits[1]}`;
   } else if (from) {
-    inner = TimeUtils.convertTo_MonthDay(from);
+    inner = TimeUtils.convertToMMMDD(from);
   }
   return `<p class="trip-info__dates">${inner}</p>`;
 };
 
 const createMainInfo = (tripPointsArray = []) => {
+  let cities = tripPointsArray.reduce((acc, tripPoint) => {
+    if (acc.length === 0 || acc[acc.length - 1] !== tripPoint.destination.name) {
+      acc.push(tripPoint.destination.name);
+    }
+    return acc;
+  }, []);
+  if (cities.length > ViewValues.uiNumbers.MAX_CITY_COUNT_IN_HEADER) {
+    cities = [cities[0], '...', cities[cities.length - 1]];
+  }
   return `<div class="trip-info__main">
-            <h1 class="trip-info__title">${tripPointsArray.map((tp) => tp.destination.name).join(' &mdash; ')}</h1>
-            ${createDateLimits(tripPointsArray[0].date_from, tripPointsArray[tripPointsArray.length - 1].date_to)}
+            <h1 class="trip-info__title">${cities.join(' &mdash; ')}</h1>
+            ${tripPointsArray.length ? createDateLimits(tripPointsArray[0].date_from, tripPointsArray[tripPointsArray.length - 1].date_to) : ''}
           </div>`;
 };
 
@@ -33,11 +43,13 @@ export default class TripInfo extends AbstractViewElement {
 
   getTemplate() {
     const totalCost = this._tripPointsArray.reduce((acc, tp) => {
-      return acc + tp.base_price + tp.offers.reduce((med, offer) => { return med + offer.price; }, 0);
+      return acc + tp.basePrice + tp.offers.reduce((med, offer) => {
+        return med + offer.price;
+      }, 0);
     }, 0);
     return `<section class="trip-main__trip-info  trip-info">
-              ${createMainInfo(this._tripPointsArray)}
-              ${createTotalCost(totalCost)}
-            </section>`;
+            ${createMainInfo(this._tripPointsArray)}
+            ${createTotalCost(totalCost)}
+          </section>`;
   }
 }

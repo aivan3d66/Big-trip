@@ -1,4 +1,4 @@
-import AbstractViewElement from '../view/abstract-view-element';
+import AbstractViewElement from '../view/abstract-view-element.js';
 
 export const createElement = (template) => {
   const newElement = document.createElement('div');
@@ -42,9 +42,31 @@ export const toggleView = (container, from, to) => {
 };
 
 export const removeView = (component) => {
+  if (!component) {
+    return;
+  }
   if (!(component instanceof AbstractViewElement)) {
     throw new Error('Can remove only ViewElement');
   }
   component.getElement().remove();
   component.removeElement();
+};
+
+export const getFocusObject = (target) => {
+  return {
+    isFocusOn: true,
+    caret: [target.selectionStart, target.selectionEnd],
+  };
+};
+
+export const restoreFocus = (target, focusObj) => {
+  if (!focusObj) {
+    return;
+  }
+  if (focusObj.isFocusOn) {
+    target.focus();
+  }
+  if (focusObj.caret) {
+    target.setSelectionRange(focusObj.caret[0], focusObj.caret[1]);
+  }
 };

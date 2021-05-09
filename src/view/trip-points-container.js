@@ -1,4 +1,4 @@
-import AbstractViewElement from './abstract-view-element';
+import AbstractViewElement from './abstract-view-element.js';
 
 export default class TripPointsContainer extends AbstractViewElement {
   constructor() {

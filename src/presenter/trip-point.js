@@ -1,29 +1,26 @@
-import TripPointEditorView from '../view/trip-editor-form';
-import TripPointView from '../view/trip-point';
-import {handlerTypes} from '../view/handlers';
-import {renderElement, toggleView, removeView} from '../utils/ui';
-
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
+import TripPointEditorView from '../view/trip-point-editor.js';
+import TripPointView from '../view/trip-point.js';
+import {ViewEvents} from '../view/view-events.js';
+import {renderElement, toggleView, removeView} from '../utils/ui.js';
 
 export default class TripPointPresenter {
-  constructor({containerForTripPoints, editClickCallback, closeClickCallback, updateDataCallback} = {}) {
+
+  constructor({containerForTripPoints, openEditFormCallback, closeEditFormCallback, updatePointDataCallback, deletePointCallback} = {}) {
     this._container = containerForTripPoints;
     this._tripPointData = null;
     this._tripPointView = null;
     this._tripPointEditView = null;
-    this._closePointEditForm = this._closePointEditForm.bind(this);
-    this._openPointEditForm = this._openPointEditForm.bind(this);
-    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
-    this._favoriteClick = this._favoriteClick.bind(this);
     this._callbacks = {
-      editClickCallback,
-      closeClickCallback,
-      updateDataCallback,
+      onOpenEditForm: openEditFormCallback,
+      onCloseEditForm: closeEditFormCallback,
+      onUpdatePointData: updatePointDataCallback,
+      onDeletePoint: deletePointCallback,
     };
-    this._mode = Mode.DEFAULT;
+    this._handleOpenEditFormButtonClick = this._handleOpenEditFormButtonClick.bind(this);
+    this._handleFavoriteButtonClick = this._handleFavoriteButtonClick.bind(this);
+    this._handleCloseEditFormButtonClick = this._handleCloseEditFormButtonClick.bind(this);
+    this._handleSavePointChangesButtonClick = this._handleSavePointChangesButtonClick.bind(this);
+    this._handleDeletePointButtonClick = this._handleDeletePointButtonClick.bind(this);
   }
 
   init(tripPointData) {
@@ -33,11 +30,13 @@ export default class TripPointPresenter {
     const prevEditPointView = this._tripPointEditView;
 
     this._tripPointView = new TripPointView(tripPointData);
-    this._tripPointView.addEventListener(handlerTypes.OPEN_POINT_POPUP, this._openPointEditForm);
-    this._tripPointView.addEventListener(handlerTypes.FAVORITE_CLICK, this._favoriteClick);
+    this._tripPointView.setEventListener(ViewEvents.uid.OPEN_POINT_POPUP, this._handleOpenEditFormButtonClick);
+    this._tripPointView.setEventListener(ViewEvents.uid.FAVORITE_CLICK, this._handleFavoriteButtonClick);
 
     this._tripPointEditView = new TripPointEditorView(tripPointData);
-    this._tripPointEditView.addEventListener(handlerTypes.CLOSE_POINT_POPUP, this._closePointEditForm);
+    this._tripPointEditView.setEventListener(ViewEvents.uid.CLOSE_POINT_POPUP, this._handleCloseEditFormButtonClick);
+    this._tripPointEditView.setEventListener(ViewEvents.uid.SAVE_POINT, this._handleSavePointChangesButtonClick);
+    this._tripPointEditView.setEventListener(ViewEvents.uid.DELETE_POINT, this._handleDeletePointButtonClick);
 
     if (!prevPointView || !prevEditPointView) {
       renderElement(this._container, this._tripPointView);
@@ -49,42 +48,6 @@ export default class TripPointPresenter {
     removeView(prevEditPointView);
   }
 
-  setEditModeEnabled(enabled) {
-    const from = enabled ? this._tripPointView : this._tripPointEditView;
-    const to = enabled ? this._tripPointEditView : this._tripPointView;
-    toggleView(this._container, from, to);
-  }
-  _escKeyDownHandler(evt) {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
-      this._closePointEditForm();
-    }
-  }
-
-  _closePointEditForm() {
-    if (this._callbacks.closeClickCallback) {
-      this._callbacks.closeClickCallback(this);
-      document.removeEventListener('keydown', this._escKeyDownHandler);
-    }
-  }
-
-  _openPointEditForm() {
-    if (this._callbacks.editClickCallback) {
-      this._callbacks.editClickCallback(this);
-      document.addEventListener('keydown', this._escKeyDownHandler);
-    }
-  }
-
-  _favoriteClick() {
-    this._commitUpdate({isFavorite: !this._tripPointData.isFavorite});
-  }
-
-  _commitUpdate(updatedObjectPart) {
-    if (this._callbacks.updateDataCallback) {
-      this._callbacks.updateDataCallback(this, Object.assign({}, this._tripPointData, updatedObjectPart));
-    }
-  }
-
   destroy() {
     removeView(this._tripPointView);
     removeView(this._tripPointEditView);
@@ -92,5 +55,53 @@ export default class TripPointPresenter {
 
   get tripPointData() {
     return this._tripPointData;
+  }
+
+  setEditModeEnabled(enabled) {
+    const from = enabled ? this._tripPointView : this._tripPointEditView;
+    const to = enabled ? this._tripPointEditView : this._tripPointView;
+    toggleView(this._container, from, to);
+    if (!enabled) {
+      this._tripPointEditView.tripPoint = this._tripPointData;
+    }
+  }
+
+  setBlock(isBlocked) {
+    this._tripPointEditView.setBlock(isBlocked);
+  }
+
+  unlockWithError() {
+    this._tripPointEditView.unlockWithError();
+  }
+
+  _handleCloseEditFormButtonClick() {
+    this._invokeCallback(this._callbacks.onCloseEditForm, this);
+  }
+
+  _handleOpenEditFormButtonClick() {
+    this._invokeCallback(this._callbacks.onOpenEditForm, this);
+  }
+
+  _handleFavoriteButtonClick() {
+    this._commitUpdate({isFavorite: !this._tripPointData.isFavorite});
+  }
+
+  _handleSavePointChangesButtonClick() {
+    this._commitUpdate(this._tripPointEditView.tripPoint);
+  }
+
+  _commitUpdate(updatedObjectPart) {
+    this._invokeCallback(this._callbacks.onUpdatePointData, Object.assign({}, this._tripPointData, updatedObjectPart));
+  }
+
+  _handleDeletePointButtonClick() {
+    this._invokeCallback(this._callbacks.onDeletePoint, this._tripPointData);
+  }
+
+  _invokeCallback(cFunc, ...params) {
+    if (!cFunc) {
+      return;
+    }
+    cFunc(...params);
   }
 }
