@@ -42,7 +42,7 @@ const createOffer = (title, price) => {
 const createOffers = (offers) => {
   return `<h4 class="visually-hidden">Offers:</h4>
           <ul class="event__selected-offers">
-            ${offers.map((o) => createOffer(o.title, o.price)).join('')}
+            ${offers.map((offer) => createOffer(offer.title, offer.price)).join('')}
           </ul>`;
 };
 
@@ -55,14 +55,25 @@ const createFavoriteButton = (isFavorite) => {
           </button>`;
 };
 
-export default class TripPoint extends AbstractInteractiveElement {
+const createOpenButton = (isOnline) => {
+  return `<button class="event__rollup-btn" type="button" ${isOnline ? '' : 'disabled'}>
+                  <span class="visually-hidden">Open event</span>
+                </button>`;
+};
+
+export default class TripPointView extends AbstractInteractiveElement {
   constructor(tripPoint) {
     super();
-    this.tripPoint = tripPoint;
+    this._tripPoint = tripPoint;
+    this._isOnline = true;
   }
 
-  set tripPoint(value) {
-    this._tripPoint = value;
+  setOnlineMode(isOnline) {
+    this._isOnline = isOnline;
+    this.updateElement();
+  }
+
+  restoreHandlers() {
     this._registerEventSupport({
       parent: this.getElement(),
       selectorInsideParent: '.event__rollup-btn',
@@ -77,23 +88,26 @@ export default class TripPoint extends AbstractInteractiveElement {
     });
   }
 
-  get tripPoint() {
-    return this._tripPoint;
+  unlockWithError() {
+    this.getElement().querySelector('.event').classList.add('shake');
+    this.getElement().querySelector('.event').classList.add('event--edit__performing-operation-error');
+    setTimeout(() => {
+      this.getElement().querySelector('.event').classList.remove('event--edit__performing-operation-error');
+      this.getElement().querySelector('.event').classList.remove('shake');
+    }, 2000);
   }
 
   getTemplate() {
     return `<li class="trip-events__item">
               <div class="event">
-                ${createDate(this.tripPoint.dateFrom)}
-                ${createType(this.tripPoint.type)}
-                ${createDestinationTitle(this.tripPoint.destination.name)}
-                ${createShedule(this.tripPoint.dateFrom, this.tripPoint.dateTo)}                
-                ${createBasePrice(this.tripPoint.basePrice)}                
-                ${createOffers(this.tripPoint.offers)}                
-                ${createFavoriteButton(this.tripPoint.isFavorite)}
-                <button class="event__rollup-btn" type="button">
-                  <span class="visually-hidden">Open event</span>
-                </button>
+                ${createDate(this._tripPoint.dateFrom)}
+                ${createType(this._tripPoint.type)}
+                ${createDestinationTitle(this._tripPoint.destination.name)}
+                ${createShedule(this._tripPoint.dateFrom, this._tripPoint.dateTo)}
+                ${createBasePrice(this._tripPoint.basePrice)}
+                ${createOffers(this._tripPoint.offers)}
+                ${createFavoriteButton(this._tripPoint.isFavorite)}
+                ${createOpenButton(this._isOnline)}
               </div>
             </li>`;
   }

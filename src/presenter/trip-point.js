@@ -1,5 +1,5 @@
-import TripPointEditorView from '../view/trip-point-editor.js';
-import TripPointView from '../view/trip-point.js';
+import TripPointEditorView from '../view/trip-point-editor-view.js';
+import TripPointView from '../view/trip-point-editor-view.js';
 import {ViewEvents} from '../view/view-events.js';
 import {renderElement, toggleView, removeView} from '../utils/ui.js';
 
@@ -21,23 +21,22 @@ export default class TripPointPresenter {
     this._handleCloseEditFormButtonClick = this._handleCloseEditFormButtonClick.bind(this);
     this._handleSavePointChangesButtonClick = this._handleSavePointChangesButtonClick.bind(this);
     this._handleDeletePointButtonClick = this._handleDeletePointButtonClick.bind(this);
+    this._isEditMode = false;
+    this._isOnlineMode = true;
   }
 
   init(tripPointData) {
     this._tripPointData = tripPointData;
-
     const prevPointView = this._tripPointView;
     const prevEditPointView = this._tripPointEditView;
-
     this._tripPointView = new TripPointView(tripPointData);
     this._tripPointView.setEventListener(ViewEvents.uid.OPEN_POINT_POPUP, this._handleOpenEditFormButtonClick);
     this._tripPointView.setEventListener(ViewEvents.uid.FAVORITE_CLICK, this._handleFavoriteButtonClick);
-
+    this._tripPointView.setOnlineMode(this._isOnlineMode);
     this._tripPointEditView = new TripPointEditorView(tripPointData);
     this._tripPointEditView.setEventListener(ViewEvents.uid.CLOSE_POINT_POPUP, this._handleCloseEditFormButtonClick);
     this._tripPointEditView.setEventListener(ViewEvents.uid.SAVE_POINT, this._handleSavePointChangesButtonClick);
     this._tripPointEditView.setEventListener(ViewEvents.uid.DELETE_POINT, this._handleDeletePointButtonClick);
-
     if (!prevPointView || !prevEditPointView) {
       renderElement(this._container, this._tripPointView);
       return;
@@ -49,12 +48,9 @@ export default class TripPointPresenter {
   }
 
   destroy() {
+    this._isEditMode = false;
     removeView(this._tripPointView);
     removeView(this._tripPointEditView);
-  }
-
-  get tripPointData() {
-    return this._tripPointData;
   }
 
   setEditModeEnabled(enabled) {
@@ -62,8 +58,16 @@ export default class TripPointPresenter {
     const to = enabled ? this._tripPointEditView : this._tripPointView;
     toggleView(this._container, from, to);
     if (!enabled) {
-      this._tripPointEditView.tripPoint = this._tripPointData;
+      this._tripPointEditView.setTripPoint(this._tripPointData);
+    } else {
+      this._tripPointEditView.restoreHandlers();
     }
+    this._isEditMode = enabled;
+  }
+
+  setOnlineMode(isOnline) {
+    this._isOnlineMode = isOnline;
+    this._tripPointView.setOnlineMode(isOnline);
   }
 
   setBlock(isBlocked) {
@@ -71,7 +75,11 @@ export default class TripPointPresenter {
   }
 
   unlockWithError() {
-    this._tripPointEditView.unlockWithError();
+    if (this._isEditMode) {
+      this._tripPointEditView.unlockWithError();
+    } else {
+      this._tripPointView.unlockWithError();
+    }
   }
 
   _handleCloseEditFormButtonClick() {
@@ -87,7 +95,7 @@ export default class TripPointPresenter {
   }
 
   _handleSavePointChangesButtonClick() {
-    this._commitUpdate(this._tripPointEditView.tripPoint);
+    this._commitUpdate(this._tripPointEditView.getTripPoint());
   }
 
   _commitUpdate(updatedObjectPart) {
