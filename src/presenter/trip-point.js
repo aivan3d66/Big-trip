@@ -1,5 +1,5 @@
 import TripPointEditorView from '../view/trip-point-editor-view.js';
-import TripPointView from '../view/trip-point-editor-view.js';
+import TripPointView from '../view/trip-point-view.js';
 import {ViewEvents} from '../view/view-events.js';
 import {renderElement, toggleView, removeView} from '../utils/ui.js';
 
@@ -27,22 +27,28 @@ export default class TripPointPresenter {
 
   init(tripPointData) {
     this._tripPointData = tripPointData;
+
     const prevPointView = this._tripPointView;
     const prevEditPointView = this._tripPointEditView;
+
     this._tripPointView = new TripPointView(tripPointData);
     this._tripPointView.setEventListener(ViewEvents.uid.OPEN_POINT_POPUP, this._handleOpenEditFormButtonClick);
     this._tripPointView.setEventListener(ViewEvents.uid.FAVORITE_CLICK, this._handleFavoriteButtonClick);
     this._tripPointView.setOnlineMode(this._isOnlineMode);
+
     this._tripPointEditView = new TripPointEditorView(tripPointData);
     this._tripPointEditView.setEventListener(ViewEvents.uid.CLOSE_POINT_POPUP, this._handleCloseEditFormButtonClick);
     this._tripPointEditView.setEventListener(ViewEvents.uid.SAVE_POINT, this._handleSavePointChangesButtonClick);
     this._tripPointEditView.setEventListener(ViewEvents.uid.DELETE_POINT, this._handleDeletePointButtonClick);
+
     if (!prevPointView || !prevEditPointView) {
       renderElement(this._container, this._tripPointView);
       return;
     }
+
     toggleView(this._container, prevPointView, this._tripPointView);
     toggleView(this._container, prevEditPointView, this._tripPointEditView);
+
     removeView(prevPointView);
     removeView(prevEditPointView);
   }

@@ -32,7 +32,7 @@ const models = {
 };
 
 const menuCallback = (uiType) => {
-  if(!models.points.getTripPoints().length) {
+  if (!models.points.getTripPoints().length) {
     return;
   }
   viewItems.menu.setUiViewType(uiType);
@@ -41,7 +41,7 @@ const menuCallback = (uiType) => {
 };
 
 const checkForOffline = () => {
-  if(!isOnline()) {
+  if (!isOnline()) {
     renderElement(getComponent(AppConstants.selector.OFFLINE_INDICATOR), viewItems.offlineIndicator);
   } else {
     removeView(viewItems.offlineIndicator);
@@ -96,7 +96,7 @@ const renderApp = () => {
 const initApp = () => {
   renderApp();
   getComponent(AppConstants.selector.INFO).querySelector('.trip-main__event-add-btn').addEventListener('click', () => {
-    if(isOnline()) {
+    if (isOnline()) {
       viewItems.tripPresenter.setAddNewPointMode();
       return;
     }
