@@ -1,15 +1,17 @@
-# Проект «Большое путешествие»
+# Project «Big trip»
 
-HTML Academy. Курс: "JavaScript. Архитектура клиентских приложений".
+HTML Academy. Course: "JavaScript. Architecture of Front-end applications".
 
-Проект представляет собой SPA-приложение, разработанное с соблюдением принципов ООП. Для построениея пользовательского интерфейса используется шаблон проектирования - MVP.
-Сервис помогает детально спланировать маршрут поездки, рассчитать стоимость путешествия, получить информацию о достопримечательностях и статистику.
+The project is Single page application. Programming methodology - OOP. The design template - MVP is used to construct the user interface. Offline support (used Service Worker)
 
-Для запуска приложения необходимо клонировать репозиторий через:
+The service helps to plan the route in detail, calculate the cost of the journey, get information about sights and statistics.
+
+To get started, just clone repo and run:
 ### `terminal`
 
-В папке проекта:
+In the project directory:
 ### `npm install`
 
-Затем:
+And:
+
 ### `npm start`
