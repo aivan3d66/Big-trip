@@ -29,7 +29,7 @@ const parseTripPoint = (tripPoint = {}) => {
     dateTo,
     isFavorite,
     isEditMode: id !== 'new',
-    isDestinationExists: !!Cities.getCity(destination.name),
+    isDestinationExists: Cities.getCity(destination.name) ? true : false,
   };
 };
 
@@ -168,8 +168,10 @@ export default class TripPointEditorView extends AbstractInteractiveElement {
     super();
     this._data = parseTripPoint(tripPoint);
     this._calendar = null;
+    //
     this._handleDateChangeEvent = this._handleDateChangeEvent.bind(this);
     this._handleCalendarCloseEvent = this._handleCalendarCloseEvent.bind(this);
+    //
     this._wrapAsInternalListener(this._handlePointTypeListClick, ViewEvents.uid.POINT_TYPE_CLICK);
     this._wrapAsInternalListener(this._handleDestinationTextFieldInput, ViewEvents.uid.DESTINATION_FIELD_INPUT);
     this._wrapAsInternalListener(this._handlePriceTextFieldEvent, ViewEvents.uid.PRICE_FIELD_INPUT);
